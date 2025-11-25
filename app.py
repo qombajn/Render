@@ -1,5 +1,6 @@
 from flask import Flask, Response
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
@@ -9,12 +10,12 @@ def generate_time_image():
     
     svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <svg width="880" height="400" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="white" stroke="black" stroke-width="2"/>
-    <text x="50" y="120" font-family="Arial, sans-serif" font-size="48" fill="black">
-        Godzina: {current_time}
+    <image href="/static/background.jpg" width="880" height="400"/>
+    <text x="780" y="350" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="end">
+        {current_time}
     </text>
-    <text x="50" y="220" font-family="Arial, sans-serif" font-size="36" fill="blue">
-        Data: {current_date}
+    <text x="780" y="390" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="end">
+        {current_date}
     </text>
 </svg>'''
     return svg_content
@@ -51,4 +52,6 @@ def get_time_image():
     return response
 
 if __name__ == '__main__':
+    # Utwórz katalog static jeśli nie istnieje
+    os.makedirs('static', exist_ok=True)
     app.run(host='0.0.0.0', port=5000)
