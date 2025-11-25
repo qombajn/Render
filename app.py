@@ -8,12 +8,12 @@ def generate_time_image():
     current_date = datetime.now().strftime("%Y-%m-%d")
     
     svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
-<svg width="400" height="150" xmlns="http://www.w3.org/2000/svg">
+<svg width="880" height="400" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" fill="white" stroke="black" stroke-width="2"/>
-    <text x="50" y="60" font-family="Arial, sans-serif" font-size="24" fill="black">
+    <text x="50" y="120" font-family="Arial, sans-serif" font-size="48" fill="black">
         Godzina: {current_time}
     </text>
-    <text x="50" y="100" font-family="Arial, sans-serif" font-size="18" fill="blue">
+    <text x="50" y="220" font-family="Arial, sans-serif" font-size="36" fill="blue">
         Data: {current_date}
     </text>
 </svg>'''
@@ -33,7 +33,7 @@ def home():
         </head>
         <body>
             <h1>🕐 Obrazek z aktualną godziną</h1>
-            <img src="/time.png" alt="Aktualna godzina">
+            <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
             <p>Obrazek automatycznie się odświeża co sekundę</p>
             <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
         </body>
