@@ -45,13 +45,8 @@ def generate_time_image():
     </text>
     
     <!-- Data -->
-    <text x="780" y="380" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="end" filter="url(#shadow)">
+    <text x="780" y="390" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="end" filter="url(#shadow)">
         {current_date}
-    </text>
-    
-    <!-- Strefa czasowa -->
-    <text x="780" y="400" font-family="Arial, sans-serif" font-size="18" fill="white" text-anchor="end" filter="url(#shadow)">
-        UTC+1
     </text>
 </svg>'''
     
@@ -105,10 +100,9 @@ def home():
         </head>
         <body>
             <div class="container">
-                <h1>🕐 Aktualny czas (UTC+1)</h1>
+                <h1>🕐 Aktualny czas</h1>
                 <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
                 <p>Obrazek automatycznie się odświeża co sekundę</p>
-                <p>Strefa czasowa: UTC+1 (Polska, Europa Środkowa)</p>
                 <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
             </div>
         </body>
