@@ -1,24 +1,45 @@
 from flask import Flask, Response
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
+from PIL import Image, ImageDraw, ImageFont
+import io
 
 app = Flask(__name__)
 
 def generate_time_image():
-    current_time = datetime.now().strftime("%H:%M:%S")
-    current_date = datetime.now().strftime("%Y-%m-%d")
+    # Strefa czasowa UTC+1
+    timezone_offset = timezone(timedelta(hours=1))
+    current_time_utc1 = datetime.now(timezone_offset)
     
-    svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
-<svg width="880" height="400" xmlns="http://www.w3.org/2000/svg">
-    <image href="/static/background.jpg" width="880" height="400"/>
-    <text x="780" y="350" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="end">
-        {current_time}
-    </text>
-    <text x="780" y="390" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="end">
-        {current_date}
-    </text>
-</svg>'''
-    return svg_content
+    current_time = current_time_utc1.strftime("%H:%M:%S")
+    current_date = current_time_utc1.strftime("%Y-%m-%d")
+    
+    # Tworzenie obrazka 880x400
+    img = Image.new('RGB', (880, 400), color='lightblue')
+    draw = ImageDraw.Draw(img)
+    
+    # Próba załadowania czcionki (dostosuj ścieżkę jeśli potrzeba)
+    try:
+        time_font = ImageFont.truetype("arial.ttf", 36)
+        date_font = ImageFont.truetype("arial.ttf", 24)
+    except:
+        # Fallback do domyślnej czcionki
+        time_font = ImageFont.load_default()
+        date_font = ImageFont.load_default()
+    
+    # Rysowanie czasu i daty
+    draw.text((780, 320), current_time, fill='black', font=time_font, anchor="rm")
+    draw.text((780, 360), current_date, fill='black', font=date_font, anchor="rm")
+    
+    # Dodanie informacji o strefie czasowej
+    draw.text((780, 390), "UTC+1", fill='black', font=date_font, anchor="rm")
+    
+    # Konwersja do bytes
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='JPEG')
+    img_byte_arr.seek(0)
+    
+    return img_byte_arr.getvalue()
 
 @app.route('/')
 def home():
@@ -33,18 +54,19 @@ def home():
             </style>
         </head>
         <body>
-            <h1>🕐 Obrazek z aktualną godziną</h1>
-            <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
+            <h1>🕐 Obrazek z aktualną godziną (UTC+1)</h1>
+            <img src="/time.jpg" alt="Aktualna godzina" width="880" height="400">
             <p>Obrazek automatycznie się odświeża co sekundę</p>
-            <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
+            <p>Strefa czasowa: UTC+1 (Polska, Europa Środkowa)</p>
+            <p>Bezpośredni link do obrazka: <a href="/time.jpg">/time.jpg</a></p>
         </body>
     </html>
     '''
 
-@app.route('/time.png')
+@app.route('/time.jpg')
 def get_time_image():
-    svg_content = generate_time_image()
-    response = Response(svg_content, mimetype='image/svg+xml')
+    jpg_data = generate_time_image()
+    response = Response(jpg_data, mimetype='image/jpeg')
     # Zapobieganie cache'owaniu
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
@@ -52,6 +74,4 @@ def get_time_image():
     return response
 
 if __name__ == '__main__':
-    # Utwórz katalog static jeśli nie istnieje
-    os.makedirs('static', exist_ok=True)
     app.run(host='0.0.0.0', port=5000)
