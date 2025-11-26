@@ -1,7 +1,7 @@
 from flask import Flask, Response
 from datetime import datetime, timezone, timedelta
 import os
-from PIL import Image, ImageDraw, ImageFont
+import cairosvg
 import io
 
 app = Flask(__name__)
@@ -14,32 +14,39 @@ def generate_time_image():
     current_time = current_time_utc1.strftime("%H:%M:%S")
     current_date = current_time_utc1.strftime("%Y-%m-%d")
     
-    # Tworzenie obrazka 880x400
-    img = Image.new('RGB', (880, 400), color='lightblue')
-    draw = ImageDraw.Draw(img)
+    svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<svg width="880" height="400" xmlns="http://www.w3.org/2000/svg">
+    <!-- Tło -->
+    <rect width="100%" height="100%" fill="#1e3a8a"/>
     
-    # Próba załadowania czcionki (dostosuj ścieżkę jeśli potrzeba)
-    try:
-        time_font = ImageFont.truetype("arial.ttf", 36)
-        date_font = ImageFont.truetype("arial.ttf", 24)
-    except:
-        # Fallback do domyślnej czcionki
-        time_font = ImageFont.load_default()
-        date_font = ImageFont.load_default()
+    <!-- Gradient dla lepszego wyglądu -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bgGradient)"/>
     
-    # Rysowanie czasu i daty
-    draw.text((780, 320), current_time, fill='black', font=time_font, anchor="rm")
-    draw.text((780, 360), current_date, fill='black', font=date_font, anchor="rm")
+    <!-- Czas -->
+    <text x="440" y="180" font-family="Arial, sans-serif" font-size="72" fill="white" text-anchor="middle" font-weight="bold">
+        {current_time}
+    </text>
     
-    # Dodanie informacji o strefie czasowej
-    draw.text((780, 390), "UTC+1", fill='black', font=date_font, anchor="rm")
+    <!-- Data -->
+    <text x="440" y="250" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="middle">
+        {current_date}
+    </text>
     
-    # Konwersja do bytes
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='JPEG')
-    img_byte_arr.seek(0)
+    <!-- Strefa czasowa -->
+    <text x="440" y="300" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle">
+        UTC+1 (Polska)
+    </text>
+</svg>'''
     
-    return img_byte_arr.getvalue()
+    # Konwersja SVG do PNG
+    png_data = cairosvg.svg2png(bytestring=svg_content.encode('utf-8'))
+    return png_data
 
 @app.route('/')
 def home():
@@ -49,24 +56,58 @@ def home():
             <title>Obrazek z godziną</title>
             <meta http-equiv="refresh" content="1">
             <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                img { border: 1px solid #ccc; padding: 10px; margin: 20px 0; }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 40px; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }
+                .container {
+                    max-width: 900px;
+                    margin: 0 auto;
+                    text-align: center;
+                }
+                img { 
+                    border: 3px solid white; 
+                    border-radius: 10px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    margin: 20px 0; 
+                }
+                h1 {
+                    font-size: 2.5em;
+                    margin-bottom: 20px;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                }
+                p {
+                    font-size: 1.2em;
+                    margin: 10px 0;
+                }
+                a {
+                    color: #ffeb3b;
+                    text-decoration: none;
+                    font-weight: bold;
+                }
+                a:hover {
+                    text-decoration: underline;
+                }
             </style>
         </head>
         <body>
-            <h1>🕐 Obrazek z aktualną godziną (UTC+1)</h1>
-            <img src="/time.jpg" alt="Aktualna godzina" width="880" height="400">
-            <p>Obrazek automatycznie się odświeża co sekundę</p>
-            <p>Strefa czasowa: UTC+1 (Polska, Europa Środkowa)</p>
-            <p>Bezpośredni link do obrazka: <a href="/time.jpg">/time.jpg</a></p>
+            <div class="container">
+                <h1>🕐 Aktualny czas (UTC+1)</h1>
+                <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
+                <p>Obrazek automatycznie się odświeża co sekundę</p>
+                <p>Strefa czasowa: UTC+1 (Polska, Europa Środkowa)</p>
+                <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
+            </div>
         </body>
     </html>
     '''
 
-@app.route('/time.jpg')
+@app.route('/time.png')
 def get_time_image():
-    jpg_data = generate_time_image()
-    response = Response(jpg_data, mimetype='image/jpeg')
+    png_data = generate_time_image()
+    response = Response(png_data, mimetype='image/png')
     # Zapobieganie cache'owaniu
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
