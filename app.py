@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 import os
 import cairosvg
 import io
+import base64
 
 app = Flask(__name__)
 
@@ -14,33 +15,43 @@ def generate_time_image():
     current_time = current_time_utc1.strftime("%H:%M:%S")
     current_date = current_time_utc1.strftime("%Y-%m-%d")
     
+    # Zakoduj tło jako base64
+    background_path = os.path.join('static', 'background.jpg')
+    if os.path.exists(background_path):
+        with open(background_path, 'rb') as f:
+            background_data = base64.b64encode(f.read()).decode('utf-8')
+        background_url = f"data:image/jpeg;base64,{background_data}"
+    else:
+        # Fallback jeśli tło nie istnieje
+        background_url = ""
+    
     svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <svg width="880" height="400" xmlns="http://www.w3.org/2000/svg">
     <!-- Tło -->
-    <rect width="100%" height="100%" fill="#1e3a8a"/>
-    
-    <!-- Gradient dla lepszego wyglądu -->
     <defs>
-        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
-        </linearGradient>
+        <filter id="shadow" x="0" y="0" width="200%" height="200%">
+            <feOffset result="offOut" in="SourceAlpha" dx="3" dy="3" />
+            <feGaussianBlur result="blurOut" in="offOut" stdDeviation="5" />
+            <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+        </filter>
     </defs>
-    <rect width="100%" height="100%" fill="url(#bgGradient)"/>
+    
+    <!-- Obrazek tła -->
+    <image href="{background_url}" width="880" height="400"/>
     
     <!-- Czas -->
-    <text x="440" y="180" font-family="Arial, sans-serif" font-size="72" fill="white" text-anchor="middle" font-weight="bold">
+    <text x="780" y="350" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="end" font-weight="bold" filter="url(#shadow)">
         {current_time}
     </text>
     
     <!-- Data -->
-    <text x="440" y="250" font-family="Arial, sans-serif" font-size="36" fill="white" text-anchor="middle">
+    <text x="780" y="380" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="end" filter="url(#shadow)">
         {current_date}
     </text>
     
     <!-- Strefa czasowa -->
-    <text x="440" y="300" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle">
-        UTC+1 (Polska)
+    <text x="780" y="400" font-family="Arial, sans-serif" font-size="18" fill="white" text-anchor="end" filter="url(#shadow)">
+        UTC+1
     </text>
 </svg>'''
     
