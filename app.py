@@ -13,19 +13,17 @@ def generate_time_image():
     timezone_offset = timezone(timedelta(hours=1))
     current_time_utc1 = datetime.now(timezone_offset)
     
-    # Czas cyfrowy
-    current_time = current_time_utc1.strftime("%H:%M:%S")
+    # Czas cyfrowy - BEZ SEKUND
+    current_time = current_time_utc1.strftime("%H:%M")
     current_date = current_time_utc1.strftime("%Y-%m-%d")
     
-    # Wartości dla zegara analogowego
+    # Wartości dla zegara analogowego - BEZ SEKUND
     hours = current_time_utc1.hour % 12
     minutes = current_time_utc1.minute
-    seconds = current_time_utc1.second
     
     # Obliczanie kątów dla wskazówek (w stopniach, zaczynając od godziny 12)
-    hour_angle = (hours * 30) + (minutes * 0.5)
-    minute_angle = (minutes * 6) + (seconds * 0.1)
-    second_angle = seconds * 6
+    hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
+    minute_angle = minutes * 6  # 6 stopni na minutę
     
     # Współrzędne środka zegara i promień
     clock_center_x = 250
@@ -39,12 +37,11 @@ def generate_time_image():
         y = clock_center_y + length * math.sin(angle_rad)
         return x, y
     
-    # Współrzędne dla wskazówek
+    # Współrzędne dla wskazówek - TYLKO GODZINOWA I MINUTOWA
     hour_x, hour_y = polar_to_cartesian(hour_angle, clock_radius * 0.5)
     minute_x, minute_y = polar_to_cartesian(minute_angle, clock_radius * 0.7)
-    second_x, second_y = polar_to_cartesian(second_angle, clock_radius * 0.8)
     
-    # Tło - nowy kolor #58294D
+    # Tło - kolor #58294D
     background_path = os.path.join('static', 'background.jpg')
     background_url = ""
     has_background = False
@@ -88,7 +85,7 @@ def generate_time_image():
         </filter>
     </defs>
     
-    <!-- Tło - nowy kolor #58294D -->
+    <!-- Tło - kolor #58294D -->
     <rect width="880" height="400" fill="#58294D"/>
     
     <!-- Obrazek tła (jeśli istnieje) -->
@@ -117,12 +114,7 @@ def generate_time_image():
           x2="{minute_x}" y2="{minute_y}" 
           stroke="white" stroke-width="4" stroke-linecap="round" filter="url(#shadow)"/>
     
-    <!-- Wskazówka sekundowa -->
-    <line x1="{clock_center_x}" y1="{clock_center_y}" 
-          x2="{second_x}" y2="{second_y}" 
-          stroke="#ffcc00" stroke-width="2" stroke-linecap="round"/>
-    
-    <!-- Czas cyfrowy (duży, wyrównany do prawej) -->
+    <!-- Czas cyfrowy (duży, wyrównany do prawej) - BEZ SEKUND -->
     <text x="{RIGHT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="72" 
           fill="white" text-anchor="end" font-weight="bold" filter="url(#shadow)">
         {current_time}
@@ -145,7 +137,8 @@ def home():
     <html>
         <head>
             <title>Obrazek z zegarem analogowym i cyfrowym</title>
-            <meta http-equiv="refresh" content="1">
+            <!-- Odświeżanie co 10 sekund (bez sekund) -->
+            <meta http-equiv="refresh" content="10">
             <style>
                 body { 
                     font-family: Arial, sans-serif; 
@@ -207,11 +200,45 @@ def home():
                     vertical-align: middle;
                     margin: 0 5px;
                 }
+                .update-info {
+                    background: rgba(255, 204, 0, 0.2);
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin: 10px 0;
+                    display: inline-block;
+                }
+                .timer {
+                    font-family: monospace;
+                    font-size: 1.2em;
+                    background: rgba(255,255,255,0.1);
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                    display: inline-block;
+                    margin-left: 10px;
+                }
             </style>
+            <script>
+                // Timer odliczający do następnego odświeżenia
+                let timeLeft = 10;
+                
+                function updateTimer() {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        timeLeft = 10;
+                    }
+                    document.getElementById('timer').textContent = timeLeft;
+                }
+                
+                // Uruchom timer po załadowaniu strony
+                window.onload = function() {
+                    updateTimer();
+                    setInterval(updateTimer, 1000);
+                };
+            </script>
         </head>
         <body>
             <div class="container">
-                <h1>⏰ Dynamiczny Zegar Analogowy i Cyfrowy (UTC+1)</h1>
+                <h1>⏰ Zegar Analogowy i Cyfrowy (UTC+1)</h1>
                 <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
                 
                 <div class="description">
@@ -219,29 +246,34 @@ def home():
                     <div class="features">
                         <div class="feature">
                             <h3>🕐 Zegar Analogowy</h3>
-                            <p>Po lewej stronie - pokazuje aktualny czas za pomocą trzech wskazówek:</p>
+                            <p>Po lewej stronie - pokazuje aktualny czas:</p>
                             <ul>
                                 <li>Biała (gruba) - godziny</li>
                                 <li>Biała (średnia) - minuty</li>
-                                <li>Żółta (cienka) - sekundy</li>
+                                <li><em>Bez wskazówki sekundowej</em></li>
                             </ul>
                         </div>
                         <div class="feature">
-                            <h3>🎨 Nowe Tło</h3>
-                            <p>Domyślne tło: <span class="color-box"></span> <strong>#58294D</strong></p>
-                            <p>Można dodać własne tło umieszczając plik <code>background.jpg</code> w folderze <code>static/</code></p>
+                            <h3>🔢 Czas Cyfrowy</h3>
+                            <p>Format: <strong>HH:MM</strong></p>
+                            <p>Data: <strong>RRRR-MM-DD</strong></p>
+                            <p><em>Bez sekund</em></p>
                         </div>
                         <div class="feature">
-                            <h3>⚡ Dynamiczny</h3>
-                            <p>Obrazek odświeża się co sekundę</p>
-                            <p>Wskazówki poruszają się płynnie</p>
+                            <h3>⚡ Odświeżanie</h3>
+                            <p>Strona odświeża się co <strong>10 sekund</strong></p>
+                            <p>Zegar pokazuje aktualny czas</p>
                             <p>Strefa czasowa: UTC+1</p>
                         </div>
                     </div>
                 </div>
                 
+                <div class="update-info">
+                    ⚡ Odświeżanie za: <span id="timer" class="timer">10</span> sekund
+                </div>
+                
                 <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
-                <p>Obrazek generowany na żądanie • Odświeżanie co 1 sekundę</p>
+                <p>Obrazek generowany na żądanie • Odświeżanie co 10 sekund</p>
             </div>
         </body>
     </html>
