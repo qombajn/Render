@@ -57,7 +57,7 @@ def generate_time_image():
 
     # Stałe pozycje dla prawidłowego wyrównania
     RIGHT_ALIGN_X = 850
-    TIME_Y = 345
+    TIME_Y = 340  # Przesunięte wyżej, bliżej daty
     DATE_Y = 390
     
     # Generowanie znaczników godzin
@@ -114,8 +114,8 @@ def generate_time_image():
           x2="{minute_x}" y2="{minute_y}" 
           stroke="white" stroke-width="4" stroke-linecap="round" filter="url(#shadow)"/>
     
-    <!-- Czas cyfrowy (duży, wyrównany do prawej) - BEZ SEKUND -->
-    <text x="{RIGHT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="72" 
+    <!-- Czas cyfrowy (mniejszy, wyrównany do prawej) - BEZ SEKUND -->
+    <text x="{RIGHT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="68" 
           fill="white" text-anchor="end" font-weight="bold" filter="url(#shadow)">
         {current_time}
     </text>
@@ -258,6 +258,7 @@ def home():
                             <p>Format: <strong>HH:MM</strong></p>
                             <p>Data: <strong>RRRR-MM-DD</strong></p>
                             <p><em>Bez sekund</em></p>
+                            <p><strong>Nowość:</strong> Mniejsza czcionka, lepsze wyrównanie</p>
                         </div>
                         <div class="feature">
                             <h3>⚡ Odświeżanie</h3>
