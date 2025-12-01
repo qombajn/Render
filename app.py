@@ -26,7 +26,7 @@ def generate_time_image():
     minute_angle = minutes * 6  # 6 stopni na minutę
     
     # NOWE: Współrzędne środka zegara analogowego (blisko czasu cyfrowego)
-    clock_center_x = 420  # Przesunięty bliżej czasu cyfrowego
+    clock_center_x = 520  # Przesunięty bliżej czasu cyfrowego
     clock_center_y = 340  # Ta sama wysokość co czas cyfrowy
     clock_radius = 48
     
@@ -56,8 +56,8 @@ def generate_time_image():
             has_background = False
 
     # NOWE: Stałe pozycje dla czasu i daty (przesunięte bliżej zegara)
-    TIME_X = 180  # Czas cyfrowy bardziej na lewo, bliżej zegara
-    DATE_X = 180  # Data w tej samej pozycji co czas
+    TIME_X = 250  # Czas cyfrowy bardziej na lewo, bliżej zegara
+    DATE_X = 250  # Data w tej samej pozycji co czas
     TIME_Y = 340  # Ta sama wysokość co zegar
     DATE_Y = 390  # Pod godziną
     
