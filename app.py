@@ -25,9 +25,9 @@ def generate_time_image():
     hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
     minute_angle = minutes * 6  # 6 stopni na minutę
     
-    # Współrzędne środka zegara analogowego (przesunięty na prawą stronę)
-    clock_center_x = 680  # Przesunięty bardziej w prawo
-    clock_center_y = 320
+    # Współrzędne środka zegara analogowego (lekko do dołu i w lewo)
+    clock_center_x = 620  # Przesunięty w lewo (było 680)
+    clock_center_y = 340  # Przesunięty w dół (było 320)
     clock_radius = 48  # 80 * 0.6 = 48 (40% mniejsze niż oryginalne 80px)
     
     # Obliczanie współrzędnych końcowych wskazówek
@@ -55,10 +55,11 @@ def generate_time_image():
         except Exception:
             has_background = False
 
-    # Stałe pozycje dla czasu i daty (teraz z lewej strony)
-    LEFT_ALIGN_X = 150  # Wyrównanie do lewej
-    TIME_Y = 340  # Przesunięte wyżej, bliżej daty
-    DATE_Y = 390
+    # Stałe pozycje dla czasu i daty (przesunięte w prawo)
+    TIME_X = 180  # Przesunięte w prawo (było 150)
+    DATE_X = 180  # Przesunięte w prawo (było 150)
+    TIME_Y = 340  # Nieco wyżej
+    DATE_Y = 390  # Nieco wyżej
     
     # Generowanie znaczników godzin
     hour_marks = []
@@ -91,19 +92,19 @@ def generate_time_image():
     <!-- Obrazek tła (jeśli istnieje) -->
     {f'<image href="{background_url}" width="880" height="400"/>' if has_background else ""}
     
-    <!-- Czas cyfrowy (z lewej strony) - BEZ SEKUND -->
-    <text x="{LEFT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="68" 
+    <!-- Czas cyfrowy (przesunięty w prawo) - BEZ SEKUND -->
+    <text x="{TIME_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="60" 
           fill="white" text-anchor="start" font-weight="bold" filter="url(#shadow)">
         {current_time}
     </text>
     
-    <!-- Data (z lewej strony, pod godziną) -->
-    <text x="{LEFT_ALIGN_X}" y="{DATE_Y}" font-family="Verdana, sans-serif" font-size="36" 
+    <!-- Data (przesunięta w prawo, pod godziną) -->
+    <text x="{DATE_X}" y="{DATE_Y}" font-family="Verdana, sans-serif" font-size="32" 
           fill="white" text-anchor="start" filter="url(#shadow)">
         {current_date}
     </text>
     
-    <!-- Zegar analogowy (40% mniejszy niż oryginał, przesunięty na prawą stronę, na prawo od daty/godziny) -->
+    <!-- Zegar analogowy (40% mniejszy, przesunięty lekko w dół i w lewo) -->
     <!-- Okrąg tarczy zegara -->
     <circle cx="{clock_center_x}" cy="{clock_center_y}" r="{clock_radius}" 
             fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8" filter="url(#shadow)"/> <!-- cieńsza krawędź -->
@@ -226,8 +227,8 @@ def home():
                     margin: 0 5px;
                     border-radius: 3px;
                 }
-                .size-info {
-                    background: rgba(255, 100, 100, 0.2);
+                .position-info {
+                    background: rgba(100, 255, 100, 0.2);
                     padding: 10px;
                     border-radius: 5px;
                     margin: 10px 0;
@@ -263,10 +264,12 @@ def home():
                     <div class="features">
                         <div class="feature">
                             <h3>🕐 Zegar Analogowy</h3>
-                            <div class="size-info">
-                                <strong>NOWOŚĆ: 40% MNIEJSZY!</strong>
+                            <div class="position-info">
+                                <strong>NOWA POZYCJA:</strong><br>
+                                • Lekko w dół<br>
+                                • Lekko w lewo
                             </div>
-                            <p>Po prawej stronie obrazka:</p>
+                            <p>40% mniejszy niż oryginał:</p>
                             <ul>
                                 <li>Biała (gruba) - godziny</li>
                                 <li><span class="minute-hand-color"></span> Żółta (#FFCC00) - minuty</li>
@@ -276,17 +279,21 @@ def home():
                         </div>
                         <div class="feature">
                             <h3>🔢 Czas Cyfrowy</h3>
-                            <p><strong>Z LEWEJ STRONY</strong></p>
+                            <div class="position-info">
+                                <strong>NOWA POZYCJA:</strong><br>
+                                • Przesunięty w prawo<br>
+                                • Mniejsza czcionka
+                            </div>
                             <p>Format: <strong>HH:MM</strong></p>
                             <p>Data: <strong>RRRR-MM-DD</strong></p>
                             <p><em>Bez sekund</em></p>
-                            <p>Mniejsza czcionka, lepsze wyrównanie</p>
+                            <p>Czcionka: 60px (było 68px)</p>
                         </div>
                         <div class="feature">
                             <h3>⚡ Nowości</h3>
                             <p>Zegar analogowy 40% mniejszy</p>
-                            <p>Czas cyfrowy po lewej stronie</p>
-                            <p>Żółta wskazówka minutowa</p>
+                            <p>Czas cyfrowy przesunięty w prawo</p>
+                            <p>Mniejsza czcionka czasu</p>
                             <p>Strefa czasowa: UTC+1</p>
                             <p>Lepsze rozmieszczenie elementów</p>
                         </div>
