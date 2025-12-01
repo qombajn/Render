@@ -25,8 +25,8 @@ def generate_time_image():
     hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
     minute_angle = minutes * 6  # 6 stopni na minutę
     
-    # Współrzędne środka zegara i promień
-    clock_center_x = 250
+    # Współrzędne środka zegara i promień - PRZESUNIĘTE W PRAWO
+    clock_center_x = 400  # Zwiększone z 250 na 400 (przesunięte w prawo)
     clock_center_y = 320
     clock_radius = 80
     
@@ -91,7 +91,7 @@ def generate_time_image():
     <!-- Obrazek tła (jeśli istnieje) -->
     {f'<image href="{background_url}" width="880" height="400"/>' if has_background else ""}
     
-    <!-- Zegar analogowy (po lewej stronie) -->
+    <!-- Zegar analogowy (przesunięty w prawo) -->
     <!-- Okrąg tarczy zegara -->
     <circle cx="{clock_center_x}" cy="{clock_center_y}" r="{clock_radius}" 
             fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="3" filter="url(#shadow)"/>
@@ -109,10 +109,10 @@ def generate_time_image():
           x2="{hour_x}" y2="{hour_y}" 
           stroke="white" stroke-width="6" stroke-linecap="round" filter="url(#shadow)"/>
     
-    <!-- Wskazówka minutowa -->
+    <!-- Wskazówka minutowa - NOWY KOLOR #FFCC00 -->
     <line x1="{clock_center_x}" y1="{clock_center_y}" 
           x2="{minute_x}" y2="{minute_y}" 
-          stroke="white" stroke-width="4" stroke-linecap="round" filter="url(#shadow)"/>
+          stroke="#FFCC00" stroke-width="4" stroke-linecap="round" filter="url(#shadow)"/>
     
     <!-- Czas cyfrowy (mniejszy, wyrównany do prawej) - BEZ SEKUND -->
     <text x="{RIGHT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="68" 
@@ -216,6 +216,16 @@ def home():
                     display: inline-block;
                     margin-left: 10px;
                 }
+                .minute-hand-color {
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    background: #FFCC00;
+                    border: 1px solid white;
+                    vertical-align: middle;
+                    margin: 0 5px;
+                    border-radius: 3px;
+                }
             </style>
             <script>
                 // Timer odliczający do następnego odświeżenia
@@ -246,10 +256,10 @@ def home():
                     <div class="features">
                         <div class="feature">
                             <h3>🕐 Zegar Analogowy</h3>
-                            <p>Po lewej stronie - pokazuje aktualny czas:</p>
+                            <p>Przesunięty bliżej czasu cyfrowego:</p>
                             <ul>
                                 <li>Biała (gruba) - godziny</li>
-                                <li>Biała (średnia) - minuty</li>
+                                <li><span class="minute-hand-color"></span> Żółta (#FFCC00) - minuty</li>
                                 <li><em>Bez wskazówki sekundowej</em></li>
                             </ul>
                         </div>
@@ -258,12 +268,12 @@ def home():
                             <p>Format: <strong>HH:MM</strong></p>
                             <p>Data: <strong>RRRR-MM-DD</strong></p>
                             <p><em>Bez sekund</em></p>
-                            <p><strong>Nowość:</strong> Mniejsza czcionka, lepsze wyrównanie</p>
+                            <p>Mniejsza czcionka, lepsze wyrównanie</p>
                         </div>
                         <div class="feature">
-                            <h3>⚡ Odświeżanie</h3>
-                            <p>Strona odświeża się co <strong>10 sekund</strong></p>
-                            <p>Zegar pokazuje aktualny czas</p>
+                            <h3>⚡ Nowości</h3>
+                            <p>Zegar analogowy bliżej czasu cyfrowego</p>
+                            <p>Nowy kolor wskazówki minutowej</p>
                             <p>Strefa czasowa: UTC+1</p>
                         </div>
                     </div>
