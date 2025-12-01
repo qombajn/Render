@@ -1,13 +1,3 @@
-from flask import Flask, Response
-from datetime import datetime, timezone, timedelta
-import os
-import cairosvg
-import io
-import base64
-import math
-
-app = Flask(__name__)
-
 def generate_time_image():
     # Ustawienie strefy czasowej na UTC+1
     timezone_offset = timezone(timedelta(hours=1))
@@ -25,8 +15,8 @@ def generate_time_image():
     hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
     minute_angle = minutes * 6  # 6 stopni na minutę
     
-    # Współrzędne środka zegara i promień - 20% MNIEJSZY I PRZESUNIĘTY BARDZIEJ W PRAWO
-    clock_center_x = 500  # Zwiększone z 400 na 500 (jeszcze bliżej prawej strony)
+    # Współrzędne środka zegara analogowego (przesunięty na prawą stronę, bardziej w prawo)
+    clock_center_x = 680  # Przesunięty bardziej w prawo
     clock_center_y = 320
     clock_radius = 64  # 80 * 0.8 = 64 (20% mniejsze)
     
@@ -55,8 +45,8 @@ def generate_time_image():
         except Exception:
             has_background = False
 
-    # Stałe pozycje dla prawidłowego wyrównania
-    RIGHT_ALIGN_X = 850
+    # Stałe pozycje dla czasu i daty (teraz z lewej strony)
+    LEFT_ALIGN_X = 150  # Wyrównanie do lewej
     TIME_Y = 340  # Przesunięte wyżej, bliżej daty
     DATE_Y = 390
     
@@ -91,7 +81,19 @@ def generate_time_image():
     <!-- Obrazek tła (jeśli istnieje) -->
     {f'<image href="{background_url}" width="880" height="400"/>' if has_background else ""}
     
-    <!-- Zegar analogowy (20% mniejszy, przesunięty w prawo) -->
+    <!-- Czas cyfrowy (z lewej strony) - BEZ SEKUND -->
+    <text x="{LEFT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="68" 
+          fill="white" text-anchor="start" font-weight="bold" filter="url(#shadow)">
+        {current_time}
+    </text>
+    
+    <!-- Data (z lewej strony, pod godziną) -->
+    <text x="{LEFT_ALIGN_X}" y="{DATE_Y}" font-family="Verdana, sans-serif" font-size="36" 
+          fill="white" text-anchor="start" filter="url(#shadow)">
+        {current_date}
+    </text>
+    
+    <!-- Zegar analogowy (20% mniejszy, przesunięty na prawą stronę, na prawo od daty/godziny) -->
     <!-- Okrąg tarczy zegara -->
     <circle cx="{clock_center_x}" cy="{clock_center_y}" r="{clock_radius}" 
             fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="2.4" filter="url(#shadow)"/> <!-- cieńsza krawędź -->
@@ -113,193 +115,8 @@ def generate_time_image():
     <line x1="{clock_center_x}" y1="{clock_center_y}" 
           x2="{minute_x}" y2="{minute_y}" 
           stroke="#FFCC00" stroke-width="3.2" stroke-linecap="round" filter="url(#shadow)"/> <!-- cieńsza -->
-    
-    <!-- Czas cyfrowy (mniejszy, wyrównany do prawej) - BEZ SEKUND -->
-    <text x="{RIGHT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="68" 
-          fill="white" text-anchor="end" font-weight="bold" filter="url(#shadow)">
-        {current_time}
-    </text>
-    
-    <!-- Data (wyrównana do prawej, pod godziną) -->
-    <text x="{RIGHT_ALIGN_X}" y="{DATE_Y}" font-family="Verdana, sans-serif" font-size="36" 
-          fill="white" text-anchor="end" filter="url(#shadow)">
-        {current_date}
-    </text>
 </svg>'''
     
     # Konwersja SVG do PNG
     png_data = cairosvg.svg2png(bytestring=svg_content.encode('utf-8'))
     return png_data
-
-@app.route('/')
-def home():
-    return '''
-    <html>
-        <head>
-            <title>Obrazek z zegarem analogowym i cyfrowym</title>
-            <!-- Odświeżanie co 10 sekund (bez sekund) -->
-            <meta http-equiv="refresh" content="10">
-            <style>
-                body { 
-                    font-family: Arial, sans-serif; 
-                    margin: 40px; 
-                    background: linear-gradient(135deg, #58294D 0%, #3a1a33 100%);
-                    color: white;
-                }
-                .container {
-                    max-width: 900px;
-                    margin: 0 auto;
-                    text-align: center;
-                }
-                img { 
-                    border: 3px solid white; 
-                    border-radius: 10px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    margin: 20px 0; 
-                }
-                h1 {
-                    font-size: 2.5em;
-                    margin-bottom: 20px;
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-                }
-                .description {
-                    background: rgba(255,255,255,0.1);
-                    padding: 20px;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                    text-align: left;
-                }
-                .features {
-                    display: flex;
-                    justify-content: space-around;
-                    flex-wrap: wrap;
-                    margin: 20px 0;
-                }
-                .feature {
-                    background: rgba(255,255,255,0.15);
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 10px;
-                    flex: 1;
-                    min-width: 200px;
-                }
-                a {
-                    color: #ffcc00;
-                    text-decoration: none;
-                    font-weight: bold;
-                }
-                a:hover {
-                    text-decoration: underline;
-                }
-                .color-box {
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    background: #58294D;
-                    border: 1px solid white;
-                    vertical-align: middle;
-                    margin: 0 5px;
-                }
-                .update-info {
-                    background: rgba(255, 204, 0, 0.2);
-                    padding: 10px;
-                    border-radius: 5px;
-                    margin: 10px 0;
-                    display: inline-block;
-                }
-                .timer {
-                    font-family: monospace;
-                    font-size: 1.2em;
-                    background: rgba(255,255,255,0.1);
-                    padding: 5px 10px;
-                    border-radius: 5px;
-                    display: inline-block;
-                    margin-left: 10px;
-                }
-                .minute-hand-color {
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    background: #FFCC00;
-                    border: 1px solid white;
-                    vertical-align: middle;
-                    margin: 0 5px;
-                    border-radius: 3px;
-                }
-            </style>
-            <script>
-                // Timer odliczający do następnego odświeżenia
-                let timeLeft = 10;
-                
-                function updateTimer() {
-                    timeLeft--;
-                    if (timeLeft <= 0) {
-                        timeLeft = 10;
-                    }
-                    document.getElementById('timer').textContent = timeLeft;
-                }
-                
-                // Uruchom timer po załadowaniu strony
-                window.onload = function() {
-                    updateTimer();
-                    setInterval(updateTimer, 1000);
-                };
-            </script>
-        </head>
-        <body>
-            <div class="container">
-                <h1>⏰ Zegar Analogowy i Cyfrowy (UTC+1)</h1>
-                <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
-                
-                <div class="description">
-                    <h2>Opis funkcjonalności:</h2>
-                    <div class="features">
-                        <div class="feature">
-                            <h3>🕐 Zegar Analogowy</h3>
-                            <p>20% mniejszy, bliżej czasu cyfrowego:</p>
-                            <ul>
-                                <li>Biała (gruba) - godziny</li>
-                                <li><span class="minute-hand-color"></span> Żółta (#FFCC00) - minuty</li>
-                                <li>Promień: 64px (było 80px)</li>
-                                <li><em>Bez wskazówki sekundowej</em></li>
-                            </ul>
-                        </div>
-                        <div class="feature">
-                            <h3>🔢 Czas Cyfrowy</h3>
-                            <p>Format: <strong>HH:MM</strong></p>
-                            <p>Data: <strong>RRRR-MM-DD</strong></p>
-                            <p><em>Bez sekund</em></p>
-                            <p>Mniejsza czcionka, lepsze wyrównanie</p>
-                        </div>
-                        <div class="feature">
-                            <h3>⚡ Nowości</h3>
-                            <p>Zegar analogowy 20% mniejszy</p>
-                            <p>Jeszcze bliżej czasu cyfrowego</p>
-                            <p>Żółta wskazówka minutowa</p>
-                            <p>Strefa czasowa: UTC+1</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="update-info">
-                    ⚡ Odświeżanie za: <span id="timer" class="timer">10</span> sekund
-                </div>
-                
-                <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
-                <p>Obrazek generowany na żądanie • Odświeżanie co 10 sekund</p>
-            </div>
-        </body>
-    </html>
-    '''
-
-@app.route('/time.png')
-def get_time_image():
-    png_data = generate_time_image()
-    response = Response(png_data, mimetype='image/png')
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
