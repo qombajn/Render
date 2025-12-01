@@ -12,7 +12,7 @@ def generate_time_image():
     timezone_offset = timezone(timedelta(hours=1))
     current_time_utc1 = datetime.now(timezone_offset)
     
-    current_time = current_time_utc1.strftime("%H:%M:%S")
+    current_time = current_time_utc1.strftime("%H:%M")
     current_date = current_time_utc1.strftime("%Y-%m-%d")
     
     # Zakoduj tło jako base64
