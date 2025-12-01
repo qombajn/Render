@@ -30,13 +30,15 @@ def generate_image(save_to_file=False):
     hour_angle = (hours * 30) + (minutes * 0.5)
     minute_angle = minutes * 6
 
-    cx, cy = 520, 340
+    cx, cy = 540, 340
     r = 48
 
     def polar(angle_deg, length):
-        rad = math.radians(angle_deg - 90)
+        """Konwertuje kąt i długość na współrzędne kartezjańskie."""
+        rad = math.radians(angle_deg - 90)  # -90° aby 0° było na górze
         return cx + length * math.cos(rad), cy + length * math.sin(rad)
 
+    # Współrzędne końców wskazówek
     hx, hy = polar(hour_angle, r * 0.5)
     mx, my = polar(minute_angle, r * 0.7)
 
@@ -48,26 +50,41 @@ def generate_image(save_to_file=False):
         except:
             pass
 
+    # Rysowanie kresek godzinowych
     marks = []
     for i in range(12):
-        a = math.radians(i * 30 - 90)
-        x1 = cx + (r - 6) * math.cos(a)
-        y1 = cy + (r - 6) * math.sin(a)
-        x2 = cx + r * math.cos(a)
-        y2 = cy + r * math.sin(a)
-        marks.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"/>')
+        angle = i * 30  # 0°, 30°, 60°, ... 330°
+        x1, y1 = polar(angle, r - 6)
+        x2, y2 = polar(angle, r)
+        marks.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}"/>')
 
     svg = f'''<svg width="880" height="400" xmlns="http://www.w3.org/2000/svg">
-    <defs><filter id="s"><feOffset dx="3" dy="3"/><feGaussianBlur stdDeviation="5"/></filter></defs>
+    <!-- Tło -->
     <rect width="880" height="400" fill="#58294D"/>
     {f'<image href="{bg}" width="880" height="400"/>' if bg else ""}
-    <text x="250" y="340" font-family="Verdana" font-size="60" fill="white" text-anchor="start" font-weight="bold" filter="url(#s)">{time_str}</text>
-    <text x="250" y="390" font-family="Verdana" font-size="32" fill="white" text-anchor="start" filter="url(#s)">{date_str}</text>
-    <circle cx="{cx}" cy="{cy}" r="{r}" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8" filter="url(#s)"/>
+
+    <!-- Czas i data -->
+    <text x="250" y="340" font-family="Verdana" font-size="60" fill="white" text-anchor="start" font-weight="bold">{time_str}</text>
+    <text x="250" y="390" font-family="Verdana" font-size="32" fill="white" text-anchor="start">{date_str}</text>
+
+    <!-- Tarcza zegara -->
+    <circle cx="{cx}" cy="{cy}" r="{r}" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8"/>
+
+    <!-- Kreski godzinowe -->
+    <g stroke="white" stroke-width="1.2" shape-rendering="crispEdges">
+        {"".join(marks)}
+    </g>
+
+    <!-- Środek tarczy -->
     <circle cx="{cx}" cy="{cy}" r="3" fill="white"/>
-    <g stroke="white" stroke-width="1.2">{"".join(marks)}</g>
-    <line x1="{cx}" y1="{cy}" x2="{hx}" y2="{hy}" stroke="white" stroke-width="3.6" stroke-linecap="round" filter="url(#s)"/>
-    <line x1="{cx}" y1="{cy}" x2="{mx}" y2="{my}" stroke="#FFCC00" stroke-width="2.4" stroke-linecap="round" filter="url(#s)"/>
+
+    <!-- Wskazówka godzinowa -->
+    <line x1="{cx}" y1="{cy}" x2="{hx:.1f}" y2="{hy:.1f}" 
+          stroke="white" stroke-width="3.6" stroke-linecap="round"/>
+
+    <!-- Wskazówka minutowa -->
+    <line x1="{cx}" y1="{cy}" x2="{mx:.1f}" y2="{my:.1f}" 
+          stroke="#FFCC00" stroke-width="2.4" stroke-linecap="round"/>
 </svg>'''
 
     png = cairosvg.svg2png(bytestring=svg.encode())
@@ -87,20 +104,62 @@ generate_image(save_to_file=True)
 @app.route('/')
 def home():
     return '''
-    <html><head><title>Zegar</title><meta http-equiv="refresh" content="10"><style>
-    body{margin:0;padding:10px;background:#58294D;text-align:center;font-family:Arial;}
-    img{display:block;margin:0 auto;max-width:100%;}
-    .info{color:white;margin-top:10px;font-size:14px;}</style></head>
-    <body><img src="/time.png"><div class="info">Odświeżanie co 10 sekund • UTC+1</div></body></html>'''
+    <html>
+        <head>
+            <title>Zegar</title>
+            <meta http-equiv="refresh" content="10">
+            <style>
+                body {{
+                    margin: 0;
+                    padding: 10px;
+                    background: #58294D;
+                    text-align: center;
+                    font-family: Arial, sans-serif;
+                }}
+                img {{
+                    display: block;
+                    margin: 0 auto;
+                    max-width: 100%;
+                    border-radius: 8px;
+                }}
+                .info {{
+                    color: white;
+                    margin-top: 15px;
+                    font-size: 14px;
+                    opacity: 0.8;
+                }}
+                .container {{
+                    max-width: 900px;
+                    margin: 0 auto;
+                    padding: 20px;
+                }}
+                .timestamp {{
+                    color: #FFCC00;
+                    font-weight: bold;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <img src="/time.png" alt="Aktualny czas">
+                <div class="info">
+                    Odświeżanie co 10 sekund • UTC+1 • 
+                    <span class="timestamp">{}</span>
+                </div>
+            </div>
+        </body>
+    </html>'''.format(datetime.now(timezone(timedelta(hours=1))).strftime("%Y-%m-%d %H:%M:%S"))
 
 
 @app.route('/time.png')
 def get_time_image():
     png = generate_image()
     resp = Response(png, mimetype='image/png')
-    resp.headers['Cache-Control'] = 'no-cache'
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
     return resp
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
