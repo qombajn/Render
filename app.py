@@ -23,18 +23,18 @@ def generate_time_image():
     seconds = current_time_utc1.second
     
     # Obliczanie kątów dla wskazówek (w stopniach, zaczynając od godziny 12)
-    hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
-    minute_angle = (minutes * 6) + (seconds * 0.1)  # 6 stopni na minutę + 0.1 stopnia na sekundę
-    second_angle = seconds * 6  # 6 stopni na sekundę
+    hour_angle = (hours * 30) + (minutes * 0.5)
+    minute_angle = (minutes * 6) + (seconds * 0.1)
+    second_angle = seconds * 6
     
     # Współrzędne środka zegara i promień
-    clock_center_x = 250  # Zegar po lewej stronie
-    clock_center_y = 320  # Na tej samej wysokości co czas cyfrowy
-    clock_radius = 80     # Promień zegara
+    clock_center_x = 250
+    clock_center_y = 320
+    clock_radius = 80
     
     # Obliczanie współrzędnych końcowych wskazówek
     def polar_to_cartesian(angle_deg, length):
-        angle_rad = math.radians(angle_deg - 90)  # -90 aby zaczynać od godziny 12
+        angle_rad = math.radians(angle_deg - 90)
         x = clock_center_x + length * math.cos(angle_rad)
         y = clock_center_y + length * math.sin(angle_rad)
         return x, y
@@ -63,6 +63,18 @@ def generate_time_image():
     TIME_Y = 345
     DATE_Y = 390
     
+    # Generowanie znaczników godzin
+    hour_marks = []
+    for i in range(12):
+        angle = math.radians(i * 30 - 90)
+        x1 = clock_center_x + (clock_radius - 10) * math.cos(angle)
+        y1 = clock_center_y + (clock_radius - 10) * math.sin(angle)
+        x2 = clock_center_x + clock_radius * math.cos(angle)
+        y2 = clock_center_y + clock_radius * math.sin(angle)
+        hour_marks.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"/>')
+    
+    hour_marks_svg = ''.join(hour_marks)
+    
     svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <svg width="880" height="400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
@@ -80,7 +92,7 @@ def generate_time_image():
     <rect width="880" height="400" fill="#58294D"/>
     
     <!-- Obrazek tła (jeśli istnieje) -->
-    {"".join(f'<image href="{background_url}" width="880" height="400"/>' if has_background else "")}
+    {f'<image href="{background_url}" width="880" height="400"/>' if has_background else ""}
     
     <!-- Zegar analogowy (po lewej stronie) -->
     <!-- Okrąg tarczy zegara -->
@@ -92,11 +104,7 @@ def generate_time_image():
     
     <!-- Znaczniki godzin -->
     <g stroke="white" stroke-width="2">
-        {''.join([f'<line x1="{clock_center_x + (clock_radius - 10) * math.cos(math.radians(i * 30 - 90))}" 
-                      y1="{clock_center_y + (clock_radius - 10) * math.sin(math.radians(i * 30 - 90))}" 
-                      x2="{clock_center_x + clock_radius * math.cos(math.radians(i * 30 - 90))}" 
-                      y2="{clock_center_y + clock_radius * math.sin(math.radians(i * 30 - 90))}"/>' 
-                  for i in range(12)])}
+        {hour_marks_svg}
     </g>
     
     <!-- Wskazówka godzinowa -->
