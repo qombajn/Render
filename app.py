@@ -25,10 +25,10 @@ def generate_time_image():
     hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
     minute_angle = minutes * 6  # 6 stopni na minutę
     
-    # Współrzędne środka zegara analogowego (lekko do dołu i w lewo)
-    clock_center_x = 620  # Przesunięty w lewo (było 680)
-    clock_center_y = 340  # Przesunięty w dół (było 320)
-    clock_radius = 48  # 80 * 0.6 = 48 (40% mniejsze niż oryginalne 80px)
+    # NOWE: Współrzędne środka zegara analogowego (blisko czasu cyfrowego)
+    clock_center_x = 420  # Przesunięty bliżej czasu cyfrowego
+    clock_center_y = 340  # Ta sama wysokość co czas cyfrowy
+    clock_radius = 48
     
     # Obliczanie współrzędnych końcowych wskazówek
     def polar_to_cartesian(angle_deg, length):
@@ -37,7 +37,7 @@ def generate_time_image():
         y = clock_center_y + length * math.sin(angle_rad)
         return x, y
     
-    # Współrzędne dla wskazówek - TYLKO GODZINOWA I MINUTOWA
+    # Współrzędne dla wskazówek
     hour_x, hour_y = polar_to_cartesian(hour_angle, clock_radius * 0.5)
     minute_x, minute_y = polar_to_cartesian(minute_angle, clock_radius * 0.7)
     
@@ -55,17 +55,17 @@ def generate_time_image():
         except Exception:
             has_background = False
 
-    # Stałe pozycje dla czasu i daty (przesunięte w prawo)
-    TIME_X = 180  # Przesunięte w prawo (było 150)
-    DATE_X = 180  # Przesunięte w prawo (było 150)
-    TIME_Y = 340  # Nieco wyżej
-    DATE_Y = 390  # Nieco wyżej
+    # NOWE: Stałe pozycje dla czasu i daty (przesunięte bliżej zegara)
+    TIME_X = 180  # Czas cyfrowy bardziej na lewo, bliżej zegara
+    DATE_X = 180  # Data w tej samej pozycji co czas
+    TIME_Y = 340  # Ta sama wysokość co zegar
+    DATE_Y = 390  # Pod godziną
     
     # Generowanie znaczników godzin
     hour_marks = []
     for i in range(12):
         angle = math.radians(i * 30 - 90)
-        x1 = clock_center_x + (clock_radius - 6) * math.cos(angle)  # Dostosowane do mniejszego zegara
+        x1 = clock_center_x + (clock_radius - 6) * math.cos(angle)
         y1 = clock_center_y + (clock_radius - 6) * math.sin(angle)
         x2 = clock_center_x + clock_radius * math.cos(angle)
         y2 = clock_center_y + clock_radius * math.sin(angle)
@@ -92,40 +92,40 @@ def generate_time_image():
     <!-- Obrazek tła (jeśli istnieje) -->
     {f'<image href="{background_url}" width="880" height="400"/>' if has_background else ""}
     
-    <!-- Czas cyfrowy (przesunięty w prawo) - BEZ SEKUND -->
+    <!-- Czas cyfrowy (blisko zegara analogowego) - BEZ SEKUND -->
     <text x="{TIME_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="60" 
           fill="white" text-anchor="start" font-weight="bold" filter="url(#shadow)">
         {current_time}
     </text>
     
-    <!-- Data (przesunięta w prawo, pod godziną) -->
+    <!-- Data (pod godziną, na tej samej wysokości co zegar) -->
     <text x="{DATE_X}" y="{DATE_Y}" font-family="Verdana, sans-serif" font-size="32" 
           fill="white" text-anchor="start" filter="url(#shadow)">
         {current_date}
     </text>
     
-    <!-- Zegar analogowy (40% mniejszy, przesunięty lekko w dół i w lewo) -->
+    <!-- Zegar analogowy (blisko czasu cyfrowego) -->
     <!-- Okrąg tarczy zegara -->
     <circle cx="{clock_center_x}" cy="{clock_center_y}" r="{clock_radius}" 
-            fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8" filter="url(#shadow)"/> <!-- cieńsza krawędź -->
+            fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="1.8" filter="url(#shadow)"/>
     
     <!-- Środek zegara -->
-    <circle cx="{clock_center_x}" cy="{clock_center_y}" r="3" fill="white"/> <!-- mniejszy środek -->
+    <circle cx="{clock_center_x}" cy="{clock_center_y}" r="3" fill="white"/>
     
     <!-- Znaczniki godzin -->
-    <g stroke="white" stroke-width="1.2"> <!-- cieńsze znaczniki -->
+    <g stroke="white" stroke-width="1.2">
         {hour_marks_svg}
     </g>
     
     <!-- Wskazówka godzinowa -->
     <line x1="{clock_center_x}" y1="{clock_center_y}" 
           x2="{hour_x}" y2="{hour_y}" 
-          stroke="white" stroke-width="3.6" stroke-linecap="round" filter="url(#shadow)"/> <!-- cieńsza -->
+          stroke="white" stroke-width="3.6" stroke-linecap="round" filter="url(#shadow)"/>
     
-    <!-- Wskazówka minutowa - NOWY KOLOR #FFCC00 -->
+    <!-- Wskazówka minutowa - KOLOR #FFCC00 -->
     <line x1="{clock_center_x}" y1="{clock_center_y}" 
           x2="{minute_x}" y2="{minute_y}" 
-          stroke="#FFCC00" stroke-width="2.4" stroke-linecap="round" filter="url(#shadow)"/> <!-- cieńsza -->
+          stroke="#FFCC00" stroke-width="2.4" stroke-linecap="round" filter="url(#shadow)"/>
 </svg>'''
     
     # Konwersja SVG do PNG
@@ -135,177 +135,35 @@ def generate_time_image():
 @app.route('/')
 def home():
     return '''
+    <!DOCTYPE html>
     <html>
         <head>
-            <title>Obrazek z zegarem analogowym i cyfrowym</title>
-            <!-- Odświeżanie co 10 sekund (bez sekund) -->
+            <title>Zegar</title>
             <meta http-equiv="refresh" content="10">
             <style>
                 body { 
-                    font-family: Arial, sans-serif; 
-                    margin: 40px; 
-                    background: linear-gradient(135deg, #58294D 0%, #3a1a33 100%);
-                    color: white;
-                }
-                .container {
-                    max-width: 900px;
-                    margin: 0 auto;
+                    margin: 0; 
+                    padding: 10px; 
+                    background: #58294D;
                     text-align: center;
+                    font-family: Arial, sans-serif;
                 }
                 img { 
-                    border: 3px solid white; 
-                    border-radius: 10px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    margin: 20px 0; 
+                    display: block; 
+                    margin: 0 auto; 
+                    max-width: 100%;
                 }
-                h1 {
-                    font-size: 2.5em;
-                    margin-bottom: 20px;
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-                }
-                .description {
-                    background: rgba(255,255,255,0.1);
-                    padding: 20px;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                    text-align: left;
-                }
-                .features {
-                    display: flex;
-                    justify-content: space-around;
-                    flex-wrap: wrap;
-                    margin: 20px 0;
-                }
-                .feature {
-                    background: rgba(255,255,255,0.15);
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 10px;
-                    flex: 1;
-                    min-width: 200px;
-                }
-                a {
-                    color: #ffcc00;
-                    text-decoration: none;
-                    font-weight: bold;
-                }
-                a:hover {
-                    text-decoration: underline;
-                }
-                .color-box {
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    background: #58294D;
-                    border: 1px solid white;
-                    vertical-align: middle;
-                    margin: 0 5px;
-                }
-                .update-info {
-                    background: rgba(255, 204, 0, 0.2);
-                    padding: 10px;
-                    border-radius: 5px;
-                    margin: 10px 0;
-                    display: inline-block;
-                }
-                .timer {
-                    font-family: monospace;
-                    font-size: 1.2em;
-                    background: rgba(255,255,255,0.1);
-                    padding: 5px 10px;
-                    border-radius: 5px;
-                    display: inline-block;
-                    margin-left: 10px;
-                }
-                .minute-hand-color {
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    background: #FFCC00;
-                    border: 1px solid white;
-                    vertical-align: middle;
-                    margin: 0 5px;
-                    border-radius: 3px;
-                }
-                .position-info {
-                    background: rgba(100, 255, 100, 0.2);
-                    padding: 10px;
-                    border-radius: 5px;
-                    margin: 10px 0;
-                    display: inline-block;
+                .info {
+                    color: white;
+                    margin-top: 10px;
+                    font-size: 14px;
                 }
             </style>
-            <script>
-                // Timer odliczający do następnego odświeżenia
-                let timeLeft = 10;
-                
-                function updateTimer() {
-                    timeLeft--;
-                    if (timeLeft <= 0) {
-                        timeLeft = 10;
-                    }
-                    document.getElementById('timer').textContent = timeLeft;
-                }
-                
-                // Uruchom timer po załadowaniu strony
-                window.onload = function() {
-                    updateTimer();
-                    setInterval(updateTimer, 1000);
-                };
-            </script>
         </head>
         <body>
-            <div class="container">
-                <h1>⏰ Zegar Analogowy i Cyfrowy (UTC+1)</h1>
-                <img src="/time.png" alt="Aktualna godzina" width="880" height="400">
-                
-                <div class="description">
-                    <h2>Opis funkcjonalności:</h2>
-                    <div class="features">
-                        <div class="feature">
-                            <h3>🕐 Zegar Analogowy</h3>
-                            <div class="position-info">
-                                <strong>NOWA POZYCJA:</strong><br>
-                                • Lekko w dół<br>
-                                • Lekko w lewo
-                            </div>
-                            <p>40% mniejszy niż oryginał:</p>
-                            <ul>
-                                <li>Biała (gruba) - godziny</li>
-                                <li><span class="minute-hand-color"></span> Żółta (#FFCC00) - minuty</li>
-                                <li>Promień: 48px (było 80px)</li>
-                                <li><em>Bez wskazówki sekundowej</em></li>
-                            </ul>
-                        </div>
-                        <div class="feature">
-                            <h3>🔢 Czas Cyfrowy</h3>
-                            <div class="position-info">
-                                <strong>NOWA POZYCJA:</strong><br>
-                                • Przesunięty w prawo<br>
-                                • Mniejsza czcionka
-                            </div>
-                            <p>Format: <strong>HH:MM</strong></p>
-                            <p>Data: <strong>RRRR-MM-DD</strong></p>
-                            <p><em>Bez sekund</em></p>
-                            <p>Czcionka: 60px (było 68px)</p>
-                        </div>
-                        <div class="feature">
-                            <h3>⚡ Nowości</h3>
-                            <p>Zegar analogowy 40% mniejszy</p>
-                            <p>Czas cyfrowy przesunięty w prawo</p>
-                            <p>Mniejsza czcionka czasu</p>
-                            <p>Strefa czasowa: UTC+1</p>
-                            <p>Lepsze rozmieszczenie elementów</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="update-info">
-                    ⚡ Odświeżanie za: <span id="timer" class="timer">10</span> sekund
-                </div>
-                
-                <p>Bezpośredni link do obrazka: <a href="/time.png">/time.png</a></p>
-                <p>Obrazek generowany na żądanie • Odświeżanie co 10 sekund</p>
+            <img src="/time.png" alt="Aktualna godzina">
+            <div class="info">
+                Odświeżanie co 10 sekund • UTC+1
             </div>
         </body>
     </html>
