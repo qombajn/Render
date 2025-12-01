@@ -1,0 +1,5 @@
+# project files
+.idea/
+.venv/
+.venv1/
+test.png
