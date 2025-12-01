@@ -25,10 +25,10 @@ def generate_time_image():
     hour_angle = (hours * 30) + (minutes * 0.5)  # 30 stopni na godzinę + 0.5 stopnia na minutę
     minute_angle = minutes * 6  # 6 stopni na minutę
     
-    # Współrzędne środka zegara i promień - PRZESUNIĘTE W PRAWO
-    clock_center_x = 400  # Zwiększone z 250 na 400 (przesunięte w prawo)
+    # Współrzędne środka zegara i promień - 20% MNIEJSZY I PRZESUNIĘTY BARDZIEJ W PRAWO
+    clock_center_x = 500  # Zwiększone z 400 na 500 (jeszcze bliżej prawej strony)
     clock_center_y = 320
-    clock_radius = 80
+    clock_radius = 64  # 80 * 0.8 = 64 (20% mniejsze)
     
     # Obliczanie współrzędnych końcowych wskazówek
     def polar_to_cartesian(angle_deg, length):
@@ -64,8 +64,8 @@ def generate_time_image():
     hour_marks = []
     for i in range(12):
         angle = math.radians(i * 30 - 90)
-        x1 = clock_center_x + (clock_radius - 10) * math.cos(angle)
-        y1 = clock_center_y + (clock_radius - 10) * math.sin(angle)
+        x1 = clock_center_x + (clock_radius - 8) * math.cos(angle)  # Dostosowane do mniejszego zegara
+        y1 = clock_center_y + (clock_radius - 8) * math.sin(angle)
         x2 = clock_center_x + clock_radius * math.cos(angle)
         y2 = clock_center_y + clock_radius * math.sin(angle)
         hour_marks.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"/>')
@@ -91,28 +91,28 @@ def generate_time_image():
     <!-- Obrazek tła (jeśli istnieje) -->
     {f'<image href="{background_url}" width="880" height="400"/>' if has_background else ""}
     
-    <!-- Zegar analogowy (przesunięty w prawo) -->
+    <!-- Zegar analogowy (20% mniejszy, przesunięty w prawo) -->
     <!-- Okrąg tarczy zegara -->
     <circle cx="{clock_center_x}" cy="{clock_center_y}" r="{clock_radius}" 
-            fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="3" filter="url(#shadow)"/>
+            fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="2.4" filter="url(#shadow)"/> <!-- cieńsza krawędź -->
     
     <!-- Środek zegara -->
-    <circle cx="{clock_center_x}" cy="{clock_center_y}" r="5" fill="white"/>
+    <circle cx="{clock_center_x}" cy="{clock_center_y}" r="4" fill="white"/> <!-- mniejszy środek -->
     
     <!-- Znaczniki godzin -->
-    <g stroke="white" stroke-width="2">
+    <g stroke="white" stroke-width="1.6"> <!-- cieńsze znaczniki -->
         {hour_marks_svg}
     </g>
     
     <!-- Wskazówka godzinowa -->
     <line x1="{clock_center_x}" y1="{clock_center_y}" 
           x2="{hour_x}" y2="{hour_y}" 
-          stroke="white" stroke-width="6" stroke-linecap="round" filter="url(#shadow)"/>
+          stroke="white" stroke-width="4.8" stroke-linecap="round" filter="url(#shadow)"/> <!-- cieńsza -->
     
     <!-- Wskazówka minutowa - NOWY KOLOR #FFCC00 -->
     <line x1="{clock_center_x}" y1="{clock_center_y}" 
           x2="{minute_x}" y2="{minute_y}" 
-          stroke="#FFCC00" stroke-width="4" stroke-linecap="round" filter="url(#shadow)"/>
+          stroke="#FFCC00" stroke-width="3.2" stroke-linecap="round" filter="url(#shadow)"/> <!-- cieńsza -->
     
     <!-- Czas cyfrowy (mniejszy, wyrównany do prawej) - BEZ SEKUND -->
     <text x="{RIGHT_ALIGN_X}" y="{TIME_Y}" font-family="Verdana, sans-serif" font-size="68" 
@@ -256,10 +256,11 @@ def home():
                     <div class="features">
                         <div class="feature">
                             <h3>🕐 Zegar Analogowy</h3>
-                            <p>Przesunięty bliżej czasu cyfrowego:</p>
+                            <p>20% mniejszy, bliżej czasu cyfrowego:</p>
                             <ul>
                                 <li>Biała (gruba) - godziny</li>
                                 <li><span class="minute-hand-color"></span> Żółta (#FFCC00) - minuty</li>
+                                <li>Promień: 64px (było 80px)</li>
                                 <li><em>Bez wskazówki sekundowej</em></li>
                             </ul>
                         </div>
@@ -272,8 +273,9 @@ def home():
                         </div>
                         <div class="feature">
                             <h3>⚡ Nowości</h3>
-                            <p>Zegar analogowy bliżej czasu cyfrowego</p>
-                            <p>Nowy kolor wskazówki minutowej</p>
+                            <p>Zegar analogowy 20% mniejszy</p>
+                            <p>Jeszcze bliżej czasu cyfrowego</p>
+                            <p>Żółta wskazówka minutowa</p>
                             <p>Strefa czasowa: UTC+1</p>
                         </div>
                     </div>
