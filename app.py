@@ -104,51 +104,37 @@ generate_image(save_to_file=True)
 @app.route('/')
 def home():
     return '''
+    <!DOCTYPE html>
     <html>
         <head>
             <title>Zegar</title>
             <meta http-equiv="refresh" content="10">
             <style>
-                body {{
+                body {
                     margin: 0;
-                    padding: 10px;
+                    padding: 0;
                     background: #58294D;
-                    text-align: center;
-                    font-family: Arial, sans-serif;
-                }}
-                img {{
+                    width: 880px;
+                    height: 400px;
+                    overflow: hidden;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                }
+                img {
                     display: block;
-                    margin: 0 auto;
-                    max-width: 100%;
-                    border-radius: 8px;
-                }}
-                .info {{
-                    color: white;
-                    margin-top: 15px;
-                    font-size: 14px;
-                    opacity: 0.8;
-                }}
-                .container {{
-                    max-width: 900px;
-                    margin: 0 auto;
-                    padding: 20px;
-                }}
-                .timestamp {{
-                    color: #FFCC00;
-                    font-weight: bold;
-                }}
+                    width: 880px;
+                    height: 400px;
+                    margin: 0;
+                    padding: 0;
+                    border: none;
+                }
             </style>
         </head>
         <body>
-            <div class="container">
-                <img src="/time.png" alt="Aktualny czas">
-                <div class="info">
-                    Odświeżanie co 10 sekund • UTC+1 • 
-                    <span class="timestamp">{}</span>
-                </div>
-            </div>
+            <img src="/time.png" alt="Aktualny czas">
         </body>
-    </html>'''.format(datetime.now(timezone(timedelta(hours=1))).strftime("%Y-%m-%d %H:%M:%S"))
+    </html>'''
 
 
 @app.route('/time.png')
